@@ -1,0 +1,41 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest' 
+
+variables:
+  azureSubscription: 'perpusku-service'
+  webAppName: 'perpusku'
+
+steps:
+- task: DotNetCoreCLI@2  # Replace with the appropriate build task for your project type
+  displayName: 'Build Project'
+  inputs:
+    command: 'build'  # Or 'publish' if you want to create a deployable artifact directly
+    projects: '**/*.csproj'  # Adjust to match your project files
+
+- task: ArchiveFiles@2
+  displayName: 'Archive Build Output'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)'  # Adjust if your build output is in a different location
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+
+- task: AzureWebApp@1
+  displayName: 'Azure Web App Deploy'
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appName: $(webAppName)
+    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    deploymentMethod: 'zipDeploy'
+
+- task: AzureCLI@2
+  displayName: 'Start Web App'
+  inputs:
+    azureSubscription: $(azureSubscription)
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az webapp start --name $(webAppName) --resource-group YourResourceGroupName  # Replace with your resource group name
