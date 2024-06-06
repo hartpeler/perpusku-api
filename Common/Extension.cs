@@ -1,4 +1,5 @@
-﻿using perpusku_api.Model.Enum.MasterData;
+﻿using perpusku_api.Common.Classes;
+using perpusku_api.Model.Enum.MasterData;
 
 namespace perpusku_api.Common
 {
@@ -8,7 +9,11 @@ namespace perpusku_api.Common
         {
             var fieldInfo = genre.GetType().GetField(genre.ToString());
             var attributes = fieldInfo.GetCustomAttributes(typeof(StringValueAttribute), false) as StringValueAttribute[];
-            return attributes.Length > 0 ? attributes[0].Value : genre.ToString();
+            return attributes?.Length > 0 ? attributes[0].Value : genre.ToString();
+        }
+        public static string GetGuid()
+        {
+            return Guid.NewGuid().ToString();
         }
     }
 }

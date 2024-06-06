@@ -1,4 +1,4 @@
-﻿using perpusku_api.Common;
+﻿using perpusku_api.Common.Classes;
 using System.ComponentModel.DataAnnotations;
 
 namespace perpusku_api.Model.Data.Transactions

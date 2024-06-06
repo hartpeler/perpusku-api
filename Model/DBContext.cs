@@ -13,7 +13,6 @@ public class DataContext : DbContext
         _configuration = configuration;
     }
 
-    public DbSet<Book> Books { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -25,7 +24,7 @@ public class DataContext : DbContext
     #endregion
 
     #region Tables
-    public DbSet<Book> BooksData { get; set; }
+    public DbSet<Book> Books { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Transactioncs> Transactions { get; set; }
     public DbSet<TransactionDetail> TransactionDetails { get; set; }

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace perpusku_api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240605172147_InitialCreate")]
+    [Migration("20240606010524_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -65,11 +65,8 @@ namespace perpusku_api.Migrations
 
             modelBuilder.Entity("perpusku_api.Model.Data.Books.Book", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Author")
                         .HasColumnType("nvarchar(max)");
@@ -99,7 +96,7 @@ namespace perpusku_api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Book");
+                    b.ToTable("Books");
                 });
 
             modelBuilder.Entity("perpusku_api.Model.Data.Transactions.TransactionDetail", b =>

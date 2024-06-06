@@ -5,11 +5,11 @@ using perpusku_api.Model.DTO;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Users : ControllerBase
+public class Books : ControllerBase
 {
     private readonly IBookServices _bookGenreService;
 
-    public Users(IBookServices bookGenreService)
+    public Books(IBookServices bookGenreService)
     {
         _bookGenreService = bookGenreService;
     }

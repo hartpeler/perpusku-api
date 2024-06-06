@@ -1,4 +1,4 @@
-﻿namespace perpusku_api.Common
+﻿namespace perpusku_api.Common.Classes
 {
     [AttributeUsage(AttributeTargets.Field)]
     public class StringValueAttribute : Attribute

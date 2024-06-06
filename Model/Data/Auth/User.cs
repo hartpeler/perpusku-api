@@ -1,4 +1,4 @@
-﻿using perpusku_api.Common;
+﻿using perpusku_api.Common.Classes;
 using perpusku_api.Model.Enum;
 using System.ComponentModel.DataAnnotations;
 

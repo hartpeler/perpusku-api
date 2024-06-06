@@ -12,11 +12,10 @@ namespace perpusku_api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Book",
+                name: "Books",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Author = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -28,7 +27,7 @@ namespace perpusku_api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Book", x => x.Id);
+                    table.PrimaryKey("PK_Books", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -90,7 +89,7 @@ namespace perpusku_api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Book");
+                name: "Books");
 
             migrationBuilder.DropTable(
                 name: "TransactionDetails");

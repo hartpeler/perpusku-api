@@ -1,30 +1,47 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using perpusku_api.Common.Helpers;
 using perpusku_api.Depedencies.IServices;
-using System;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IBookServices, BookServices>();
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true, // Verify the token's issuer
+        ValidateAudience = true, // Verify the token's audience
+        ValidateLifetime = true, // Ensure token hasn't expired
+        ValidateIssuerSigningKey = true, // Verify the signing key
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IBookServices, BookServices>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication(); // Must be called before UseAuthorization()
 
 app.UseAuthorization();
 
