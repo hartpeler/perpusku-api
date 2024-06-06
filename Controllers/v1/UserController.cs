@@ -1,35 +1,73 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using perpusku_api.Common.Classes;
 using perpusku_api.Depedencies.IServices;
 using perpusku_api.Model.DTO;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class Books : ControllerBase
+public class Users : ControllerBase
 {
-    private readonly IBookServices _bookGenreService;
+    private readonly IUserService _userService;
 
-    public Books(IBookServices bookGenreService)
+    public Users(IUserService userService)
     {
-        _bookGenreService = bookGenreService;
+        _userService = userService;
     }
 
     #region get section
 
-    [HttpGet("genres")]
+    [HttpGet("")]
     [Authorize]
-    public IActionResult GetGenres()
+    public async Task<IActionResult> GetAccountData([FromQuery] string userID)
     {
-        IEnumerable<GenreDTO> genres = _bookGenreService.GetAllGenres();
-        return Ok(genres); // Returns JSON array of GenreDto objects
+        var result = await _userService.GetAccountData(userID);
+        return Ok(result);
+    }
+    [HttpGet("/list")]
+    [Authorize]
+    public async Task<IActionResult> GetAccountList()
+    {
+        var result = await _userService.GetAccountList();
+        return Ok(result);
     }
 
     #endregion
 
     #region post section
+
+    [HttpPost("")]
+    public async Task<IActionResult> SignIn(AuthDTO data)
+    {
+        var result = await _userService.SignIn(data);
+        return Ok(result);
+    }
+
+    [HttpPost("/create")]
+    public async Task<IActionResult> CreateAccount([FromBody] AuthDTOCreate data)
+    {
+        var result = await _userService.CreateAccount(data);
+        return Ok(result);
+    }
+
+    [HttpPost("/admin")]
+    [Authorize]
+    public async Task<IActionResult> CreateAccountAdmin(AuthDTOCreate data)
+    {
+        var result = await _userService.CreateAccount(data);
+        return Ok(result);
+    }
+
     #endregion
 
     #region put section
+    [HttpPut("")]
+    [Authorize]
+    public async Task<IActionResult> UpdateAccount(AuthDTOCreate data)
+    {
+        var result = await _userService.UpdateAccount(data);
+        return Ok(result);
+    }
     #endregion
 
     #region delete section

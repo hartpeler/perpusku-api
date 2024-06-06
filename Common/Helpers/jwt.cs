@@ -21,9 +21,8 @@ namespace perpusku_api.Common.Helpers
 
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, userId), // Subject (user ID)
-            // Add other claims like roles or user-specific data
-        };
+                new Claim(JwtRegisteredClaimNames.Sub, userId), // Subject (user ID)
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
@@ -34,6 +33,37 @@ namespace perpusku_api.Common.Helpers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public static bool IsJwtTokenValid(string tokenString, IConfiguration configuration) // Inject IConfiguration
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true, // Crucial for expiration check
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+                };
+
+                tokenHandler.ValidateToken(tokenString, tokenValidationParameters, out SecurityToken validatedToken);
+
+                return true; // Token is valid
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                return false; // Token has expired
+            }
+            catch (Exception)
+            {
+                // Token is invalid (e.g., wrong format, signature verification failed)
+                return false;
+            }
         }
     }
 }
