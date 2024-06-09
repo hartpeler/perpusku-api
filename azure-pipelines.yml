@@ -38,4 +38,4 @@ steps:
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      az webapp start --name $(webAppName) --resource-group YourResourceGroupName  # Replace with your resource group name
+      az webapp start --name $(webAppName) --resource-group perpusku  # Replace with your resource group name
