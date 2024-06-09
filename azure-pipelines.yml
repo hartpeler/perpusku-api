@@ -5,8 +5,8 @@ pool:
   vmImage: 'ubuntu-latest' 
 
 variables:
-  azureSubscription: 'perpusku-api'
-  webAppName: 'perpusku-api'
+  azureSubscription: 'perpuksu-api'
+  webAppName: 'perpuksu-api'
 
 steps:
 - task: DotNetCoreCLI@2  # Replace with the appropriate build task for your project type
