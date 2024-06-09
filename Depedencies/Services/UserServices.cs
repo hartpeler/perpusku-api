@@ -13,31 +13,70 @@ public class UserServices : IUserService
     readonly DataContext _dt;
     readonly JwtService _token;
     #endregion
+
+    #region constructors
+    public UserServices(DataContext context, JwtService token)
+    {
+        _dt = context;
+        _token = token;
+    }
+
+    #endregion
+
+    private async Task<int> GetUserCount()
+    {
+        var data = await _dt.Users.CountAsync();
+        return data;
+    }
+
     public async Task<MessageClass> SignIn(AuthDTO data)
     {
         var result = new MessageClass();
 
         try
         {
-            var checkUser = await _dt.Users.Where(
-                q =>
-                q.Email.Equals(data.Email) &&
-                PWEncrypt.VerifyPassword(data.Password, q.Password) == true).FirstOrDefaultAsync();
+            var userCount = await GetUserCount();
 
-            if (checkUser == null)
+            if (userCount == 0)
             {
                 result.Message = "Invalid Username/Password";
                 result.Code = ErrorCodes.NotFound;
                 return result;
             }
+            else
+            {
 
-            result.Data = _token.GenerateJwtToken(checkUser.ID);
-            result.Message = "Auth Success";
-            result.Code = ErrorCodes.OK;
+                var checkUser = await _dt.Users.Where(
+                    q =>
+                    q.Email.Equals(data.Email)).FirstOrDefaultAsync();
+              
+                
+                if(checkUser == null)
+                {
+                    result.Message = "User not found";
+                    result.Code = ErrorCodes.NotFound;
+                    return result;
+                }
+                else
+                {
+
+                    if (PWEncrypt.VerifyPassword(data.Password, checkUser.Password) == false)
+                    {
+                        result.Message = "Invalid Username/Password";
+                        result.Code = ErrorCodes.NotFound;
+                        return result;
+                    }
+                }
+
+                result.Data = _token.GenerateJwtToken(checkUser.ID);
+                result.Message = "Auth Success";
+                result.Code = ErrorCodes.OK;
+            }
+
+           
         }
         catch (Exception err)
         {
-
             result.Message = err.Message.ToString();
             result.Code = ErrorCodes.Error;
         }
@@ -51,31 +90,33 @@ public class UserServices : IUserService
         var output = new AuthDTOCreate();
         try
         {
-            var checkUser = await _dt.Users.Where(
-                q =>
-                q.Email.Equals(data.Email)).FirstOrDefaultAsync();
+                var checkUser = await _dt.Users.Where(
+                   q =>
+                   q.Email.Equals(data.Email)).FirstOrDefaultAsync();
+                
+                if(checkUser != null)
+                {
+                    result.Message = "Email already exists!";
+                    result.Code = ErrorCodes.Forbidden;
+                    return result;
+                }
 
-            if (checkUser != null)
-            {
-                result.Message = "Email already exists!";
-                result.Code = ErrorCodes.Forbidden;
-                return result;
-            }
-            data.Password = PWEncrypt.HashPassword(data.Password);
-            data.ID = BookGenreExtensions.GetGuid();
-            data.CreatedOn = DateTime.Now;
-            data.CreatedBy = data.ID;
-            data.LastUpdatedOn = DateTime.Now;
-            data.LastUpdatedBy = data.ID;
+                data.Password = PWEncrypt.HashPassword(data.Password);
+                data.ID = BookGenreExtensions.GetGuid();
+                data.CreatedOn = DateTime.Now;
+                data.CreatedBy = data.ID;
+                data.LastUpdatedOn = DateTime.Now;
+                data.LastUpdatedBy = data.ID;
 
-            _dt.Users.Add(data);
+                _dt.Users.Add(data);
+                await _dt.SaveChangesAsync();
+                
+                data.Token = _token.GenerateJwtToken(data.ID);
+                data.Password = null;
 
-            data.Token = _token.GenerateJwtToken(checkUser.ID);
-            data.Password = null;
-
-            result.Data = data;
-            result.Message = "Data Saved";
-            result.Code = ErrorCodes.OK;
+                result.Data = data;
+                result.Message = "Data Saved";
+                result.Code = ErrorCodes.OK;
         }
         catch (Exception err)
         {
@@ -94,29 +135,45 @@ public class UserServices : IUserService
 
         try
         {
-            var checkUser = await _dt.Users.Where(
-                q =>
-                q.Email.Equals(data.Email)).FirstOrDefaultAsync();
+            var userCount = await GetUserCount();
 
-            if (checkUser == null)
+            if (userCount == 0)
             {
                 result.Message = "User Not Found!";
                 result.Code = ErrorCodes.NotFound;
                 return result;
             }
-            data.Password = PWEncrypt.HashPassword(data.Password);
-            data.CreatedOn = DateTime.Now;
-            data.CreatedBy = data.ID;
-            data.LastUpdatedOn = DateTime.Now;
-            data.LastUpdatedBy = data.ID;
+            else
+            {
+                var checkUser = await _dt.Users.Where(
+                    q =>
+                    q.Email.Equals(data.Email)).FirstOrDefaultAsync();
 
-            _dt.Users.Update(data);
+                if(checkUser == null )
+                {
+                    result.Message = "User Not Found!";
+                    result.Code = ErrorCodes.NotFound;
+                    return result;
+                }
 
-            data.Token = _token.GenerateJwtToken(checkUser.ID);
-            data.Password = null;
-            result.Data = data;
-            result.Message = "Data Updated";
-            result.Code = ErrorCodes.OK;
+                data.Password = PWEncrypt.HashPassword(data.Password);
+                data.CreatedOn = DateTime.Now;
+                data.CreatedBy = data.ID;
+                data.LastUpdatedOn = DateTime.Now;
+                data.LastUpdatedBy = data.ID;
+
+                _dt.Users.Update(data);
+                await _dt.SaveChangesAsync();
+
+                data.Token = _token.GenerateJwtToken(checkUser.ID);
+                data.Password = null;
+                result.Data = data;
+                result.Message = "Data Updated";
+                result.Code = ErrorCodes.OK;
+
+
+
+            }
         }
         catch (Exception err)
         {
@@ -136,9 +193,11 @@ public class UserServices : IUserService
         {
             var checkUser = await _dt.Users.Where(
             q =>
-                q.ID.Equals(userID)).FirstOrDefaultAsync();
+                q.ID.Equals(userID)).AsNoTracking().FirstOrDefaultAsync();
 
-            if (checkUser == null)
+            var userCount = await GetUserCount();
+
+            if (checkUser == null || userCount == 0)
             {
                 result.Message = "User Not Found!";
                 result.Code = ErrorCodes.NotFound;
@@ -162,11 +221,10 @@ public class UserServices : IUserService
     public async Task<MessageClass> GetAccountList()
     {
         var result = new MessageClass();
-        var output = new AuthDTOCreate();
 
         try
         {
-            var checkUser = await _dt.Users.ToListAsync();
+            var checkUser = await _dt.Users.AsNoTracking().ToListAsync();
             
             foreach(var data in checkUser)
             {

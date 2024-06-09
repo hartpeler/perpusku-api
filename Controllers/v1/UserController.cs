@@ -50,14 +50,6 @@ public class Users : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("/admin")]
-    [Authorize]
-    public async Task<IActionResult> CreateAccountAdmin(AuthDTOCreate data)
-    {
-        var result = await _userService.CreateAccount(data);
-        return Ok(result);
-    }
-
     #endregion
 
     #region put section
