@@ -65,9 +65,9 @@ builder.Services.AddScoped<IUserService, UserServices>();
 
 var app = builder.Build();
 
-app.UseSwagger();
+//app.UseSwagger();
 
-app.UseSwaggerUI();
+//app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
