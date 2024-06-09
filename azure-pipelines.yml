@@ -6,7 +6,7 @@ pool:
 
 variables:
   azureSubscription: 'perpusku-api'
-  webAppName: 'perpusku'
+  webAppName: 'perpusku-api'
 
 steps:
 - task: DotNetCoreCLI@2  # Replace with the appropriate build task for your project type
