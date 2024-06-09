@@ -1,41 +1,49 @@
+# azure-pipelines.yml
+
 trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest' 
+  vmImage: 'ubuntu-latest'
 
 variables:
-  azureSubscription: 'perpusku-service'
-  webAppName: 'perpusku'
+  buildConfiguration: 'Release'
+  solution: '**/*.sln'
+  project: 'path/to/your/project.csproj'
+  artifactName: 'drop'
 
 steps:
-- task: DotNetCoreCLI@2  # Replace with the appropriate build task for your project type
-  displayName: 'Build Project'
+- task: UseDotNet@2
   inputs:
-    command: 'build'  # Or 'publish' if you want to create a deployable artifact directly
-    projects: '**/*.csproj'  # Adjust to match your project files
+    packageType: 'sdk'
+    version: '8.0.x' # Specify the .NET SDK version you are using
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
-- task: ArchiveFiles@2
-  displayName: 'Archive Build Output'
+- task: DotNetCoreCLI@2
   inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)'  # Adjust if your build output is in a different location
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    command: 'restore'
+    projects: '$(solution)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '$(solution)'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    projects: '$(project)'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(artifactName)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(artifactName)'
+    ArtifactName: '$(artifactName)'
 
 - task: AzureWebApp@1
-  displayName: 'Azure Web App Deploy'
   inputs:
-    azureSubscription: $(azureSubscription)
-    appName: $(webAppName)
-    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    deploymentMethod: 'zipDeploy'
-
-- task: AzureCLI@2
-  displayName: 'Start Web App'
-  inputs:
-    azureSubscription: $(azureSubscription)
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      az webapp start --name $(webAppName) --resource-group YourResourceGroupName  # Replace with your resource group name
+    azureSubscription: 'perpusku-api' # Name of the service connection
+    appType: 'webAppLinux' # Since we are using Linux
+    appName: 'perpuksu-api' # Name of your App Service
+    package: '$(Build.ArtifactStagingDirectory)/$(artifactName)/*.zip' # Path to the ZIP file containing the published app
