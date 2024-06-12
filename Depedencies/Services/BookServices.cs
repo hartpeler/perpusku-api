@@ -12,32 +12,41 @@ public class BookServices : IBookServices
     #region initializers
     readonly DataContext _dt;
     #endregion
+    public BookServices(DataContext context)
+    {
+        _dt = context;
+    }
+
     public IEnumerable<GenreDTO> GetAllGenres()
     {
         return Enum.GetValues(typeof(BookGenre))
         .Cast<BookGenre>()
                    .Select(e => new GenreDTO { ID = (int)e, Name = e.GetStringValue() });
     }
-    public async Task<List<BookListDTO>> GetBookList()
-    {
-        var result = new List<BookListDTO>();
+    public async Task<MessageClass> GetBookList()
+    {   
+        var result = new MessageClass();
+        var bookData = new List<BookListDTO>();
 
         foreach (var data in await _dt.Books.ToListAsync())
         {
-            result.Add(new BookListDTO
+            bookData.Add(new BookListDTO
             {
                 ID = data.Id,
                 Author = data.Author,
                 Description = data.Description,
-                Genre = data.Genre,
                 GenreID = (BookGenre)Enum.Parse(typeof(BookGenre), data.Genre),
+                Genre = ((BookGenre)Enum.Parse(typeof(BookGenre), data.Genre)).ToString(),
                 Name = data.Name
             });
         };
 
+        result.Code = ErrorCodes.OK;
+        result.Message = "Data loaded successfully";
+        result.Data = bookData;
         return result;
     }
-    public async Task<MessageClass> SaveData(Book data)
+    public async Task<MessageClass> SaveData(BookDTO data)
     {
         var result = new MessageClass();
 
@@ -47,11 +56,37 @@ public class BookServices : IBookServices
             _dt.Books.Add(data);
 
             await _dt.SaveChangesAsync();
+
             result.Code = ErrorCodes.OK;
             result.Message = "Data Saved Successfully";
 
         }
         catch(Exception err)
+        {
+
+            result.Code = ErrorCodes.Error;
+            result.Message = err.Message;
+
+        }
+
+        return result;
+    }
+    public async Task<MessageClass> EditData(BookDTO data)
+    {
+        var result = new MessageClass();
+
+        try
+        {
+            data.Id = BookGenreExtensions.GetGuid();
+            _dt.Books.Add(data);
+
+            await _dt.SaveChangesAsync();
+
+            result.Code = ErrorCodes.OK;
+            result.Message = "Data Saved Successfully";
+
+        }
+        catch (Exception err)
         {
 
             result.Code = ErrorCodes.Error;

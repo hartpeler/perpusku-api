@@ -7,7 +7,9 @@ namespace perpusku_api.Depedencies.IServices
     public interface IBookServices
     {
         IEnumerable<GenreDTO> GetAllGenres();
-        Task<MessageClass> SaveData(Book data);
+        Task<MessageClass> SaveData(BookDTO data);
+        Task<MessageClass> GetBookList();
+        Task<MessageClass> EditData(BookDTO data);
     }
 
 }
