@@ -1,8 +1,11 @@
-﻿namespace perpusku_api.Model.DTO
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+
+namespace perpusku_api.Model.DTO
 {
     public class AuthDTO
     {
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
     }
 }

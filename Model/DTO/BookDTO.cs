@@ -4,6 +4,6 @@ namespace perpusku_api.Model.DTO
 {
     public class BookDTO : Book
     {
-
+        public required string ID { get; set; }
     }
 }

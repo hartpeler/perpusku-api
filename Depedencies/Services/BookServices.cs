@@ -30,13 +30,16 @@ public class BookServices : IBookServices
 
         foreach (var data in await _dt.Books.ToListAsync())
         {
+            data.Genre = data.Genre == "string" || data.Genre == null ? "1" : data.Genre;
+            BookGenre enums = (BookGenre)Enum.Parse(typeof(BookGenre), data.Genre);
+
             bookData.Add(new BookListDTO
             {
                 ID = data.Id,
                 Author = data.Author,
                 Description = data.Description,
-                GenreID = (BookGenre)Enum.Parse(typeof(BookGenre), data.Genre),
-                Genre = ((BookGenre)Enum.Parse(typeof(BookGenre), data.Genre)).ToString(),
+                GenreID = enums,
+                Genre = enums.ToString(),
                 Name = data.Name
             });
         };
@@ -77,9 +80,21 @@ public class BookServices : IBookServices
 
         try
         {
-            data.Id = BookGenreExtensions.GetGuid();
-            _dt.Books.Add(data);
+            var record = _dt.Books.FirstOrDefaultAsync(x => x.Id.Equals(data.Id));
+            
+            if(record == null)
+            {
+                result.Message = "Data Not Found!";
+                result.Code = ErrorCodes.NotFound;
+                return result;
+            }
+            
+            data.CreatedOn = DateTime.Now;
+            data.CreatedBy = data.ID;
+            data.LastUpdatedOn = DateTime.Now;
+            data.LastUpdatedBy = data.ID;
 
+            _dt.Books.Update(data);
             await _dt.SaveChangesAsync();
 
             result.Code = ErrorCodes.OK;

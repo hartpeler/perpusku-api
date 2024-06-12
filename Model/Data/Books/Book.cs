@@ -7,7 +7,7 @@ namespace perpusku_api.Model.Data.Books
     public class Book : TimeStamp
     {
         [Key]
-        public string? Id { get; set; }
+        public required string Id { get; set; }
         public string? Name { get; set; }
         [AllowNull]
         public string Description { get; set; }

@@ -45,7 +45,6 @@ public class UserServices : IUserService
             }
             else
             {
-
                 var checkUser = await _dt.Users.Where(
                     q =>
                     q.Email.Equals(data.Email)).FirstOrDefaultAsync();
@@ -87,7 +86,6 @@ public class UserServices : IUserService
     public async Task<MessageClass> CreateAccount(AuthDTOCreate data)
     {
         var result = new MessageClass();
-        var output = new AuthDTOCreate();
         try
         {
                 var checkUser = await _dt.Users.Where(
@@ -112,7 +110,7 @@ public class UserServices : IUserService
                 await _dt.SaveChangesAsync();
                 
                 data.Token = _token.GenerateJwtToken(data.ID);
-                data.Password = null;
+                data.Password = "";
 
                 result.Data = data;
                 result.Message = "Data Saved";
@@ -131,7 +129,6 @@ public class UserServices : IUserService
     public async Task<MessageClass> UpdateAccount(AuthDTOCreate data)
     {
         var result = new MessageClass();
-        var output = new AuthDTOCreate();
 
         try
         {
@@ -166,7 +163,7 @@ public class UserServices : IUserService
                 await _dt.SaveChangesAsync();
 
                 data.Token = _token.GenerateJwtToken(checkUser.ID);
-                data.Password = null;
+                data.Password = "";
                 result.Data = data;
                 result.Message = "Data Updated";
                 result.Code = ErrorCodes.OK;
@@ -187,7 +184,6 @@ public class UserServices : IUserService
     public async Task<MessageClass> GetAccountData(string userID)
     {
         var result = new MessageClass();
-        var output = new AuthDTOCreate();
 
         try
         {
@@ -203,7 +199,7 @@ public class UserServices : IUserService
                 result.Code = ErrorCodes.NotFound;
                 return result;
             }
-            checkUser.Password = null;
+            checkUser.Password = "";
             result.Data = checkUser;
             result.Message = "Auth Success";
             result.Code = ErrorCodes.OK;
@@ -228,7 +224,7 @@ public class UserServices : IUserService
             
             foreach(var data in checkUser)
             {
-                data.Password = null;
+                data.Password = "";
             }
 
             result.Data = checkUser;
